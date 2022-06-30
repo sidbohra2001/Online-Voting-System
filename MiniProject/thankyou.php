@@ -18,6 +18,8 @@ if(isset($_SESSION['user_data']['vid']) && isset($_GET['cname'])){
     $vote = $vote + 1;
     $q2 = "UPDATE candidates SET votes='".$vote."' WHERE name = '".$_GET['cname']."'";
     $r2 = mysqli_query($con, $q2);
+    $token = "DELETE FROM token WHERE voterid = '" . $_SESSION['user_data']['vid'] . "'";
+    $rtoken = mysqli_query($con, $token);
     unset($_SESSION['user_is_logged_in']);
     session_destroy();
     include('includes/header.php');
