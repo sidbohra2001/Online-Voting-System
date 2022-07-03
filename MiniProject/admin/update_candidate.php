@@ -18,11 +18,42 @@ if (isset($_SESSION['admin_data']['empid'])) {
             if (!$con) {
                 die("Connection to the database failed due to : " . mysqli_connect_error());
             }
-            $q1 = "UPDATE candidates SET party = '" . $_POST["pname"] . "', cimage = '" . $_POST["cimage"] . "', pimage = '" . $_POST["pimage"] . "', goals = '" . $_POST["goals"] . "', age = '" . $_POST["age"] . "' WHERE name = '" . $_POST["name"] . "'";
-            if (mysqli_query($con, $q1)) {
-                header("location: adminpage.php");
+            $reg_flag = 1;
+            $name_reg = "/[0-9]+/";
+            if (preg_match($name_reg, $_POST["name"])) {
+                $reg_flag = $reg_flag & 0;
+                echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect candidate name format.
+                </div>';
             } else {
-                echo "<script>alert('Error in Uploading Data')</script>";
+                $reg_flag = $reg_flag & 1;
+            }
+            if (preg_match($name_reg, $_POST["pname"])) {
+                $reg_flag = $reg_flag & 0;
+                echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect party name format.
+                </div>';
+            } else {
+                $reg_flag = $reg_flag & 1;
+            }
+            if ($_POST["age"] < 18 || $_POST["age"] > 60) {
+                $reg_flag = $reg_flag & 0;
+                echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Unsuitable age.
+                </div>';
+            } else {
+                $reg_flag = $reg_flag & 1;
+            }
+            if ($reg_flag == 1) {
+                $q1 = "UPDATE candidates SET party = '" . $_POST["pname"] . "', cimage = '" . $_POST["cimage"] . "', pimage = '" . $_POST["pimage"] . "', goals = '" . $_POST["goals"] . "', age = '" . $_POST["age"] . "' WHERE name = '" . $_POST["name"] . "'";
+                if (mysqli_query($con, $q1)) {
+                    header("location: adminpage.php");
+                } else {
+                    echo "<script>alert('Error in Uploading Data')</script>";
+                }
             }
         }
         ?>

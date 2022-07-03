@@ -18,11 +18,68 @@ if (isset($_SESSION['admin_data']['empid'])) {
         if (!$con) {
             die("Connection to the database failed due to : " . mysqli_connect_error());
         }
-        $q1 = "UPDATE state1 SET fname = '".$_POST["fname"]."', name = '".$_POST["name"]."', image = '".$_POST["image"]."', phone = '".$_POST["mobile"]."', aadhar = '".$_POST["aadhar"]."' WHERE voterid = '".$_POST["voterid"]."'";
-        if (mysqli_query($con, $q1)) {
-            header("location: adminpage.php");
-        } else {
-            echo "<script>alert('Error in Uploading Data')</script>";
+        $reg_flag = 1;
+        $vid_reg = "/^[A-Z]{3}[0-9]{6}$/";
+        $name_reg = "/[0-9]+/";
+        $mobile_reg = "/^[1-9]{1}[0-9]{9}$/";
+        $aadhar_reg = "/^[0-9]{12}$/";
+        if(preg_match($vid_reg, $_POST["voterid"])){
+            $reg_flag = $reg_flag & 1;
+        }
+        else{
+            $reg_flag = $reg_flag & 0;
+            echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect Voter ID format.
+                </div>';
+        }
+        if(preg_match($name_reg, $_POST["name"])){
+            $reg_flag = $reg_flag & 0;
+            echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect name format.
+                </div>';
+        }
+        else{
+            $reg_flag = $reg_flag & 1;
+        }
+        if(preg_match($name_reg, $_POST["fname"])){
+            $reg_flag = $reg_flag & 0;
+            echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect father\'s name format.
+                </div>';
+        }
+        else{
+            $reg_flag = $reg_flag & 1;
+        }
+        if(preg_match($mobile_reg, $_POST["mobile"])){
+            $reg_flag = $reg_flag & 1;
+        }
+        else{
+            $reg_flag = $reg_flag & 0;
+            echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect Mobile Number format.
+                </div>';
+        }
+        if(preg_match($aadhar_reg, $_POST["aadhar"])){
+            $reg_flag = $reg_flag & 1;
+        }
+        else{
+            $reg_flag = $reg_flag & 0;
+            echo '<div class="alert alert-danger text-center">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Incorrect Aadhar format.
+                </div>';
+        }
+        if($reg_flag == 1){
+            $q1 = "UPDATE state1 SET fname = '".$_POST["fname"]."', name = '".$_POST["name"]."', image = '".$_POST["image"]."', phone = '".$_POST["mobile"]."', aadhar = '".$_POST["aadhar"]."' WHERE voterid = '".$_POST["voterid"]."'";
+            if (mysqli_query($con, $q1)) {
+                header("location: adminpage.php");
+            } else {
+                echo "<script>alert('Error in Uploading Data')</script>";
+            }
         }
     }
     ?>

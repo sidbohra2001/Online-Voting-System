@@ -12,34 +12,57 @@ if (isset($_POST["submit_login"])) {
     if (!$con) {
         die("Connection to the database failed due to : " . mysqli_connect_error());
     }
-    $query = "SELECT * FROM employee WHERE employee_id = '" . $_POST["emp_id"] . "'";
-    $result = mysqli_query($con, $query);
-    if (mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        if ($row["password"] == $_POST["password"]) {
-            $d_image = $row['image'];
-            $d_ename = $row['name'];
-            $s_image = "<img src='assets/images/$d_image' class='profile_image' />";
-            $p_image = "<img src='assets/images/$d_image' id='pp'/>";
-            $_SESSION['admin_data'] = array(
-                'empid' => $row['employee_id'],
-                'name' => $row['name'],
-                'image' => $s_image,
-                'pimage' => $p_image
-            );
-            $_SESSION['admin_is_logged_in']  =  true;
-            header("location: adminpage.php");
-        } else {
-            echo '<div class="alert alert-danger text-center">
+    $reg_flag = 1;
+    $emp_reg = "/^[0-9]{6}$/";
+    $pass_reg = "/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/";
+    if (preg_match($emp_reg, $_POST["emp_id"])) {
+        $reg_flag = $reg_flag & 1;
+    } else {
+        $reg_flag = $reg_flag & 0;
+        echo '<div class="alert alert-danger text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Sorry!</strong>Incorrect Employee ID format.
+            </div>';
+    }
+    if (preg_match($pass_reg, $_POST["password"])) {
+        $reg_flag = $reg_flag & 1;
+    } else {
+        $reg_flag = $reg_flag & 0;
+        echo '<div class="alert alert-danger text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Sorry!</strong>Incorrect Password format.
+            </div>';
+    }
+    if ($reg_flag == 1) {
+        $query = "SELECT * FROM employee WHERE employee_id = '" . $_POST["emp_id"] . "'";
+        $result = mysqli_query($con, $query);
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            if ($row["password"] == $_POST["password"]) {
+                $d_image = $row['image'];
+                $d_ename = $row['name'];
+                $s_image = "<img src='assets/images/$d_image' class='profile_image' />";
+                $p_image = "<img src='assets/images/$d_image' id='pp'/>";
+                $_SESSION['admin_data'] = array(
+                    'empid' => $row['employee_id'],
+                    'name' => $row['name'],
+                    'image' => $s_image,
+                    'pimage' => $p_image
+                );
+                $_SESSION['admin_is_logged_in']  =  true;
+                header("location: adminpage.php");
+            } else {
+                echo '<div class="alert alert-danger text-center">
             <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
             <strong>Sorry!</strong>Wrong Password.
             </div>';
-        }
-    } else {
-        echo '<div class="alert alert-danger text-center">
+            }
+        } else {
+            echo '<div class="alert alert-danger text-center">
             <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
             <strong>Sorry!</strong>Your account does not exist. Pleae contact the administration department.
           </div>';
+        }
     }
 }
 ?>
@@ -60,7 +83,7 @@ if (isset($_POST["submit_login"])) {
         <div class="col-md-7 mt-5">
         </div>
         <div class="col-md-4 m-4" id="form">
-            <form class="m-3" action="" method="post">
+            <form class="m-3" action="admin_login.php" method="post">
                 <div class="form-group">
                     <label for="exampleInputEmail1">Employee ID</label>
                     <input type="text" class="form-control" id="exampleInputEmail1" name="emp_id" aria-describedby="emailHelp">
