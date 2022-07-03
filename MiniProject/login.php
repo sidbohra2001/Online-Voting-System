@@ -12,59 +12,84 @@ if (isset($_POST['submit_login'])) {
     if (!$con) {
         die("Connection to the database failed due to : " . mysqli_connect_error());
     }
+    $reg_flag = 1;
+    $vid_reg = "/^[A-Z]{3}[0-9]{6}$/";
+    $pass_reg = "/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/";
+    if(preg_match($vid_reg, $_POST["voterid"])){
+        $reg_flag = $reg_flag & 1;
+    }
+    else{
+        $reg_flag = $reg_flag & 0;
+        echo '<div class="alert alert-danger text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Sorry!</strong>Incorrect Voter ID format.
+            </div>';
+    }
+    if(preg_match($pass_reg, $_POST["password"])){
+        $reg_flag = $reg_flag & 1;
+    }
+    else{
+        $reg_flag = $reg_flag & 0;
+        echo '<div class="alert alert-danger text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Sorry!</strong>Incorrect Password format.
+            </div>';
+    }
     $token = "SELECT * FROM token WHERE voterid = '" . $_POST["voterid"] . "'";
     $rtoken = mysqli_query($con, $token);
-    if(mysqli_num_rows($rtoken) == 0){
-        $query = "SELECT * FROM login_details WHERE voterid = '" . $_POST["voterid"] . "'";
-        $tquery = "INSERT INTO token VALUES('".$_POST['voterid']."')";
-        mysqli_query($con, $tquery);
-        $result = mysqli_query($con, $query);
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            if ($row["password"] == $_POST["password"]) {
-                $query1 = "SELECT * FROM state1 WHERE voterid = '" . $_POST["voterid"] . "'";
-                $r1 = mysqli_query($con, $query1);
-                if (mysqli_num_rows($r1) > 0) {
-                    $row1 = mysqli_fetch_assoc($r1);
-                    $d_image = $row1['image'];
-                    $d_fname = $row1['fname'];
-                    $s_image = "<img src='assets/images/voters/$d_image' class='profile_image' />";
-                    $p_image = "<img src='assets/images/voters/$d_image' id='pp'/>";
-                    $_SESSION['user_data'] = array(
-                        'vid' => $row1['voterid'],
-                        'fname' => $row1['fname'],
-                        'name' => $row1['name'],
-                        'image' => $s_image,
-                        'pimage' => $p_image,
-                        'phone' => $row1['phone'],
-                        'aadhar' => $row1['aadhar'],
-                        'vflag' => $row1['flag'],
-                        'con' => $con
-                    );
-                    $_SESSION['user_is_logged_in']  =  true;
-                    header('location: welcomepage.php');
+    if($reg_flag == 1){
+        if(mysqli_num_rows($rtoken) == 0){
+            $query = "SELECT * FROM login_details WHERE voterid = '" . $_POST["voterid"] . "'";
+            $tquery = "INSERT INTO token VALUES('".$_POST['voterid']."')";
+            mysqli_query($con, $tquery);
+            $result = mysqli_query($con, $query);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_assoc($result);
+                if ($row["password"] == $_POST["password"]) {
+                    $query1 = "SELECT * FROM state1 WHERE voterid = '" . $_POST["voterid"] . "'";
+                    $r1 = mysqli_query($con, $query1);
+                    if (mysqli_num_rows($r1) > 0) {
+                        $row1 = mysqli_fetch_assoc($r1);
+                        $d_image = $row1['image'];
+                        $d_fname = $row1['fname'];
+                        $s_image = "<img src='assets/images/voters/$d_image' class='profile_image' />";
+                        $p_image = "<img src='assets/images/voters/$d_image' id='pp'/>";
+                        $_SESSION['user_data'] = array(
+                            'vid' => $row1['voterid'],
+                            'fname' => $row1['fname'],
+                            'name' => $row1['name'],
+                            'image' => $s_image,
+                            'pimage' => $p_image,
+                            'phone' => $row1['phone'],
+                            'aadhar' => $row1['aadhar'],
+                            'vflag' => $row1['flag'],
+                            'con' => $con
+                        );
+                        $_SESSION['user_is_logged_in']  =  true;
+                        header('location: welcomepage.php');
+                        echo '<div class="alert alert-danger text-center">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>Sorry!</strong>Your password does not match. Pleae contact the administration department.
+                        </div>';
+                    }
+                } else {
                     echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                    <strong>Sorry!</strong>Your password does not match. Pleae contact the administration department.
-                    </div>';
+                    <strong>Sorry!</strong>Wrong Password.
+                </div>';
                 }
-            } else {
+            } else{
                 echo '<div class="alert alert-danger text-center">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Sorry!</strong>Wrong Password.
-            </div>';
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Sorry!</strong>Your account does not exist. Pleae contact the administration department.
+                </div>';
             }
-        } else{
+        } else {
             echo '<div class="alert alert-danger text-center">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Sorry!</strong>Your account does not exist. Pleae contact the administration department.
-            </div>';
+                <strong>Sorry!</strong>You are logged in to another browser.
+              </div>';
         }
-    } else {
-        echo '<div class="alert alert-danger text-center">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <strong>Sorry!</strong>You are logged in to another browser.
-          </div>';
     }
 }
 ?>
@@ -96,7 +121,8 @@ if (isset($_POST['submit_login'])) {
                     <input type="password" class="form-control" name="password" id="exampleInputPassword1">
                 </div>
                 <button type="submit" class="btn btn-primary" name="submit_login">Login</button>
-                <p class="mt-4">Don't have an account? <a href="signup.php">Sign Up</a></p>
+                <p class="mt-2"><a href="forgotpassword.php">Forgot Password?</a></p>
+                <p class="mt-2">Don't have an account? <a href="signup.php">Sign Up</a></p>
                 <p>New to Online Voting System? <a href="">For more details click here</a></p>
             </form>
         </div>

@@ -11,74 +11,67 @@ include('./includes/header.php');
     if (isset($_POST["submit"]) && isset($_POST["robot"])) {
         $reg_flag = 1;
         $vid_reg = "/^[A-Z]{3}[0-9]{6}$/";
-        $pass_reg = "/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/";
+        $pass_reg = "/^([A-Za-z0-9@]{8,20})$/";
         $name_reg = "/[0-9]+/";
         $mobile_reg = "/^[1-9]{1}[0-9]{9}$/";
         $aadhar_reg = "/^[0-9]{12}$/";
-        if(preg_match($vid_reg, $_POST["voterid"])){
+        if (preg_match($vid_reg, $_POST["voterid"])) {
             $reg_flag = $reg_flag & 1;
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Incorrect Voter ID format.
                 </div>';
         }
-        if(preg_match($pass_reg, $_POST["password"])){
+        if (preg_match($pass_reg, $_POST["password"])) {
             $reg_flag = $reg_flag & 1;
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Incorrect Password format.
                 </div>';
         }
-        if($_POST["password"] === $_POST["cpassword"]){
+        if ($_POST["password"] === $_POST["cpassword"]) {
             $reg_flag = $reg_flag & 1;
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Passwords do not match.
                 </div>';
         }
-        if(preg_match($name_reg, $_POST["name"])){
+        if (preg_match($name_reg, $_POST["name"])) {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Incorrect name format.
                 </div>';
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 1;
         }
-        if(preg_match($name_reg, $_POST["fname"])){
+        if (preg_match($name_reg, $_POST["fname"])) {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Incorrect father\'s name format.
                 </div>';
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 1;
         }
-        if(preg_match($mobile_reg, $_POST["mobile"])){
+        if (preg_match($mobile_reg, $_POST["mobile"])) {
             $reg_flag = $reg_flag & 1;
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                     <strong>Sorry!</strong>Incorrect Mobile Number format.
                 </div>';
         }
-        if(preg_match($aadhar_reg, $_POST["aadhar"])){
+        if (preg_match($aadhar_reg, $_POST["aadhar"])) {
             $reg_flag = $reg_flag & 1;
-        }
-        else{
+        } else {
             $reg_flag = $reg_flag & 0;
             echo '<div class="alert alert-danger text-center">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -95,20 +88,13 @@ include('./includes/header.php');
         }
         $q1 = "SELECT * FROM state1 WHERE voterid = '" . $_POST["voterid"] . "' AND fname = '" . $_POST["fname"] . "' AND name = '" . $_POST["name"] . "' AND phone = '" . $_POST["mobile"] . "' AND aadhar = '" . $_POST["aadhar"] . "'";
         $r1 = mysqli_query($con, $q1);
-        if($reg_flag == 1){
+        if ($reg_flag == 1) {
             if (mysqli_num_rows($r1) > 0) {
-                $q3 = "SELECT voterid FROM login_details WHERE voterid = '".$_POST["voterid"]."'";
-                $r3 = mysqli_query($con, $q3);
-                if(mysqli_num_rows($r3) == 0){
-                    $q2 = "INSERT INTO login_details (voterid, password) VALUES('" . $_POST["voterid"] . "','" . $_POST["password"] . "')";
-                    if (mysqli_query($con, $q2)) {
-                        header("location: login.php");
-                    } else {
-                        echo "<script>alert('Error in Uploading Data')</script>";
-                    }
-                }
-                else{
-                    echo "<script>alert('User is already registered !!!')</script>";    
+                $q2 = "UPDATE login_details SET password = '" . $_POST["password"] . "' WHERE voterid = '" . $_POST["voterid"] . "'";
+                if (mysqli_query($con, $q2)) {
+                    header("location: login.php");
+                } else {
+                    echo "<script>alert('Error in Uploading Data')</script>";
                 }
             } else {
                 echo "<script>alert('Provided data does not match any records in the database !!!')</script>";
@@ -121,8 +107,9 @@ include('./includes/header.php');
 
 <body style="font-family: verdana;">
     <div class="row" id="loginrow" style="background-image: linear-gradient(to bottom right,rgba(70, 102, 219, 0.5),rgba(242, 148, 48, 0.62), rgb(240, 54, 239,0.2)); background-position: center; margin-top: 50px;">
+    <div style="margin-left: 5rem; margin-top: 3rem;"><h1 style="font-weight: bold;">Fill the given details to change your password... </h1></div>
         <div class="col-md-7 mt-5" style="margin: 80px; max-width: 50%">
-            <img src="assets/images/parliament.jpg" style="z-index: -1; opacity:0.6;">
+            <img src="assets/images/geulogo.png" style="z-index: -1; opacity:0.6;">
         </div>
         <div class="col-md-4 m-4" style="margin: 80px; max-width: 50%; background: white;">
             <form class="m-3" method="POST" action="">
